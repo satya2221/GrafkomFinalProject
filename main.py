@@ -151,6 +151,13 @@ class Paint:
                                    font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.fungsi(7))
         self.reset_button.place(x=10, y=250)
 
+        # Pergerakan objek
+        self.window.bind('<space>', self.pergerakan)
+        self.window.bind('<Left>', self.pergerakan)
+        self.window.bind('<Right>', self.pergerakan)
+        self.window.bind('<Up>', self.pergerakan)
+        self.window.bind('<Down>', self.pergerakan)
+
     def movement_cursor(self, e):  # For cursor position by movement
         self.koordinat.config(text=str(e.x) + "," + str(e.y) + "px")
 
@@ -233,7 +240,43 @@ class Paint:
             except:
                 print("Error: click only not motion")
 
-        self.canvas.bind('<ButtonRelease-1>', rectangle_make)
+            self.canvas.bind('<ButtonRelease-1>', rectangle_make)
+
+    def pergerakan(self, e):
+        try:
+            self.status_fungsi['text'] = "Movement"
+            self.status_fungsi.place(x=1180, y=685)
+            take = self.notation_box.get(ACTIVE)
+            self.notation_box.config(state=DISABLED)
+            take = self.tempat_undo[take]
+            if e.keycode == 32:  # spasi
+                self.notation_box.config(state=NORMAL)
+            if e.keycode == 37:  # arrow left
+                if type(take) == list:
+                    for x in take:
+                        self.canvas.move(x, -5, 0)
+                else:
+                    self.canvas.move(take, -5, 0)
+            if e.keycode == 38:  # arrow down
+                if type(take) == list:
+                    for x in take:
+                        self.canvas.move(x, 0, -5)
+                else:
+                    self.canvas.move(take, 0, -5)
+            if e.keycode == 39:  # arrow right
+                if type(take) == list:
+                    for x in take:
+                        self.canvas.move(x, 5, 0)
+                else:
+                    self.canvas.move(take, 5, 0)
+            if e.keycode == 40:  # arrow up
+                if type(take) == list:
+                    for x in take:
+                        self.canvas.move(x, 0, 5)
+                else:
+                    self.canvas.move(take, 0, 5)
+        except:
+            print("Error: Nothing selected from indexing box")
 
     def reset(self):  # Reset
         self.status_fungsi['text'] = "Grafkom"
