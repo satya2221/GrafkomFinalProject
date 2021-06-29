@@ -27,6 +27,7 @@ class Paint:
         self.notation_box = None
         self.segmen_buat = None  # segment_1 di contoh
         self.segmen_tools = None  # segment_2 di contoh
+        self.frame_width = None  # make_width_fram di contoh buat setting ketebalan objek
 
         # inisialisasi koordinat
         self.x_lama = None
@@ -54,7 +55,7 @@ class Paint:
         self.outline_information.set(0)
 
         # inisialisasi warna
-        self.fill_color = "#FFFFFF"  # isi kotak, lingkaran, or objek lainnya
+        self.fill_color = "#FFFFFF"  # isi kotak, lingkaran, or objek lainnya warnanya putih
         self.fill_color_line = "black"  # warna untuk garis atau pakai pensil
         self.outline_color_line = "black"  # warna pinggiran kotak, lingkaran, or objek
 
@@ -70,7 +71,7 @@ class Paint:
         self.make_status_bar()
         # self.buat_menu()
         # self.buat_status_bar()
-        # self.width_controller()  # pengaturan slider ukuran outline dan penghapus
+        self.width_controller()  # pengaturan slider ukuran outline dan penghapus
         # self.make_canvas.bind("<Control-MouseWheel>", self.zoom_controller)  # default ctrl+scroll buat zoom in /out
         # self.make_canvas.bind('<Motion>', self.movement_cursor)  # deteksi pergerakan mouse
 
@@ -101,9 +102,6 @@ class Paint:
         elif notasi == 5:
             self.canvas.bind("<B1-Motion>", self.garis_sembarang)
             self.canvas.bind("<Shift-B1-Motion>", self.garis_lurus)
-        elif notasi == 6:
-            self.canvas.config(cursor="dotbox")
-            self.canvas.bind("<B1-Motion>", self.setup_penghapus)
         elif notasi == 7:
             self.canvas.unbind("<B1-Motion>")
             self.canvas.config(cursor="")
@@ -232,15 +230,15 @@ class Paint:
             for x in self.temp:
                 self.canvas.delete(x)
             try:
-                take = self.canvas.create_rectangle(self.x_lama, self.y_lama, e.x, e.y, width=self.width_maintainer,
-                                                    fill=self.fill_color, outline=self.outline_color_line)
-                self.tempat_undo.append(take)
+                ambil = self.canvas.create_rectangle(self.x_lama, self.y_lama, e.x, e.y, width=self.width_maintainer,
+                                                     fill=self.fill_color, outline=self.outline_color_line)
+                self.tempat_undo.append(ambil)
                 self.notation_box.insert(END, len(self.tempat_undo) - 1)
                 self.reset()
             except:
                 print("Error: click only not motion")
 
-            self.canvas.bind('<ButtonRelease-1>', rectangle_make)
+        self.canvas.bind('<ButtonRelease-1>', rectangle_make)
 
     def pergerakan(self, e):
         try:
@@ -277,6 +275,23 @@ class Paint:
                     self.canvas.move(take, 0, 5)
         except:
             print("Error: Nothing selected from indexing box")
+
+    def width_controller(self):
+        self.frame_width = Frame(self.kumpulan_fungsi, relief=GROOVE, bd=5, width=10, height=10, bg="chocolate")
+        self.frame_width.place(x=10, y=305)
+
+        def shape_outline_width_controller(e):  # Shape Border Width Controller
+            self.width_maintainer = e
+
+        self.shape_outline_width_label = Label(self.frame_width, text="Outline Width", font=("Arial", 12, "bold"),
+                                               bg="chocolate", fg="yellow", padx=20)
+        self.shape_outline_width_label.pack(pady=4)
+
+        self.width_controller_scale = Scale(self.frame_width, orient=HORIZONTAL, from_=0, to=100, bg="green",
+                                            fg="yellow", font=("Arial", 8, "bold"), relief=RAISED, bd=3,
+                                            command=shape_outline_width_controller, activebackground="red")
+        self.width_controller_scale.set(self.width_maintainer)
+        self.width_controller_scale.pack(pady=7)
 
     def reset(self):  # Reset
         self.status_fungsi['text'] = "Grafkom"
