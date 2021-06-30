@@ -72,7 +72,7 @@ class Paint:
         # self.buat_menu()
         # self.buat_status_bar()
         self.width_controller()  # pengaturan slider ukuran outline dan penghapus
-        # self.make_canvas.bind("<Control-MouseWheel>", self.zoom_controller)  # default ctrl+scroll buat zoom in /out
+        self.canvas.bind("<Control-MouseWheel>", self.zoom_controller)  # default ctrl+scroll buat zoom in /out
         # self.make_canvas.bind('<Motion>', self.movement_cursor)  # deteksi pergerakan mouse
 
     def pilih_warna(self):
@@ -293,7 +293,22 @@ class Paint:
         self.width_controller_scale.set(self.width_maintainer)
         self.width_controller_scale.pack(pady=7)
 
+    def zoom_controller(self, e):
+        self.status_fungsi['text'] = "Zoom Controller"
+        self.status_fungsi.place(x=1180, y=685)
+        try:
+            if e.delta > 0:
+               self.canvas.scale("all",e.x,e.y,1.1,1.1)
+            elif e.delta<0:
+               self.canvas.scale("all", e.x, e.y, 0.9, 0.9)
+        except:
+            if e == 1:
+                self.canvas.scale("all", 550, 350, 1.1, 1.1)
+            else:
+                self.canvas.scale("all", 550, 350, 0.9, 0.9)
+
     def reset(self):  # Reset
+        print(self.notation_box[0])
         self.status_fungsi['text'] = "Grafkom"
         self.status_fungsi.place(x=1140, y=690)
         # if self.notation_box:
