@@ -43,6 +43,8 @@ class Paint:
         self.segitiga = Button(self.window)
         self.selection_tools = Button(self.window)
         self.reset_button = Button(self.window)
+        self.milih_warna_fill = Button(self.window)
+        self.milih_warna_outline = Button(self.window)
 
         # insialisasi yang perlu disimpan array
         self.tempat_undo = []
@@ -76,8 +78,15 @@ class Paint:
         self.canvas.bind("<Control-MouseWheel>", self.zoom_controller)  # default ctrl+scroll buat zoom in /out
         self.canvas.bind('<Motion>', self.movement_cursor)  # deteksi pergerakan mouse
 
-    def pilih_warna(self):
-        colorchooser.askcolor(title="Choose color")
+    def warna_fill(self):
+        color = colorchooser.askcolor(title="Choose color")
+        self.fill_color = color[1]
+        self.fill_color_line = color[1]
+
+
+    def warna_outline(self):
+        color = colorchooser.askcolor(title="Choose color")
+        self.outline_color_line = color[1]
 
     def fungsi(self, notasi):
         if self.temp:
@@ -154,6 +163,18 @@ class Paint:
         self.reset_button = Button(self.kumpulan_fungsi, text="Reset", bg="white", fg="firebrick3",
                                    font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.fungsi(7))
         self.reset_button.place(x=10, y=250)
+
+        # taruh tombol milih warna fill
+        self.milih_warna_fill = Button(self.kumpulan_fungsi, text="Fill", bg="white", fg="firebrick3",
+                                       font=("Arial", 10, "bold"), relief=RAISED, bd=3,
+                                       command=lambda: self.warna_fill())
+        self.milih_warna_fill.place(x=70, y=250)
+
+        # taruh tombo milih warna outline
+        self.milih_warna_outline = Button(self.kumpulan_fungsi, text="Outline", bg="white", fg="firebrick3",
+                                          font=("Arial", 10, "bold"), relief=RAISED, bd=3,
+                                          command=lambda: self.warna_outline())
+        self.milih_warna_outline.place(x=120, y=250)
 
         # Pergerakan objek
         self.window.bind('<space>', self.pergerakan)
@@ -268,7 +289,8 @@ class Paint:
                 self.canvas.delete(x)
             try:
                 koordinatnya = [self.x_lama, self.y_lama, e.x, e.y]
-                ambil = self.canvas.create_polygon(self.x_lama, self.y_lama, self.x_lama - (e.x - self.x_lama), e.y, e.x, e.y,
+                ambil = self.canvas.create_polygon(self.x_lama, self.y_lama, self.x_lama - (e.x - self.x_lama), e.y,
+                                                   e.x, e.y,
                                                    width=self.width_maintainer, fill=self.fill_color,
                                                    outline=self.outline_color_line)
                 self.simpan_koordinat[ambil] = koordinatnya
