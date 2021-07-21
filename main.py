@@ -27,6 +27,8 @@ class Paint:
         self.notation_box = None  # Daftar Item
         self.segmen_buat = None  # segment_1 di contoh
         self.segmen_tools = None  # segment_2 di contoh
+        self.segmen_rotasi = None
+        self.segmen_refleksi = None
         self.frame_width = None  # make_width_fram di contoh buat setting ketebalan objek
 
         # inisialisasi koordinat
@@ -41,10 +43,13 @@ class Paint:
         self.lingkaran = Button(self.window)
         self.kotak = Button(self.window)
         self.segitiga = Button(self.window)
-        self.selection_tools = Button(self.window)
+        # self.selection_tools = Button(self.window)
         self.reset_button = Button(self.window)
         self.milih_warna_fill = Button(self.window)
         self.milih_warna_outline = Button(self.window)
+        self.rotasi = Button(self.window)
+        self.refleksi_x = Button(self.window)
+        self.refleksi_y = Button(self.window)
 
         # insialisasi yang perlu disimpan array
         self.tempat_undo = []
@@ -110,7 +115,7 @@ class Paint:
             self.canvas.bind('<B1-Motion>', self.buat_segitiga)
         elif notasi == 5:
             self.canvas.bind("<B1-Motion>", self.garis_sembarang)
-            # self.canvas.bind("<Shift-B1-Motion>", self.garis_lurus)
+            self.canvas.bind("<Shift-B1-Motion>", self.garis_lurus)
         elif notasi == 7:
             self.canvas.unbind("<B1-Motion>")
             self.canvas.config(cursor="")
@@ -126,7 +131,7 @@ class Paint:
         self.notation_box = Listbox(self.kumpulan_fungsi, width=5, height=11, font=("Arial", 10, "bold"),
                                     fg="mint cream",
                                     bg="SteelBlue1", relief=SUNKEN, bd=5)
-        self.notation_box.place(x=180, y=305)
+        self.notation_box.place(x=180, y=370)
 
         # segmen 1 untuk buat garis, kotak, dan objek lainnya
         self.segmen_buat = Label(self.kumpulan_fungsi, text="Buat Objek", bg="SteelBlue1", fg="firebrick2",
@@ -158,6 +163,17 @@ class Paint:
                             font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.fungsi(5))
         self.garis.place(x=85, y=85)
 
+        # segmen rotasi
+        self.segmen_rotasi = Label(self.kumpulan_fungsi, text="Tools Rotasi", bg="SteelBlue1", fg="firebrick2",
+                                   font=("Arial", 12, "bold"), relief=GROOVE, bd=1, padx=10, pady=1)
+        self.segmen_rotasi.place(x=55, y=130)
+
+        # taruh tombol rotasi 30 derajat
+        self.rotasi = Button(self.kumpulan_fungsi, text="30", bg="white", fg="firebrick3",
+                             font=("Arial", 10, "bold"), relief=RAISED, bd=3,
+                             command=lambda: self.warna_outline())
+        self.rotasi.place(x=10, y=160)
+
         # segmen 2 untuk tools
         self.segmen_tools = Label(self.kumpulan_fungsi, text="Kumpulan Tools", bg="SteelBlue1", fg="firebrick2",
                                   font=("Arial", 12, "bold"), relief=GROOVE, bd=1, padx=10, pady=1)
@@ -166,19 +182,34 @@ class Paint:
         # taruh tombol reset
         self.reset_button = Button(self.kumpulan_fungsi, text="Reset", bg="white", fg="firebrick3",
                                    font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.fungsi(7))
-        self.reset_button.place(x=10, y=250)
+        self.reset_button.place(x=15, y=250)
 
         # taruh tombol milih warna fill
-        self.milih_warna_fill = Button(self.kumpulan_fungsi, text="Fill", bg="white", fg="firebrick3",
+        self.milih_warna_fill = Button(self.kumpulan_fungsi, text="Fill clr", bg="white", fg="firebrick3",
                                        font=("Arial", 10, "bold"), relief=RAISED, bd=3,
                                        command=lambda: self.warna_fill())
-        self.milih_warna_fill.place(x=70, y=250)
+        self.milih_warna_fill.place(x=72, y=250)
 
-        # taruh tombo milih warna outline
-        self.milih_warna_outline = Button(self.kumpulan_fungsi, text="Outline", bg="white", fg="firebrick3",
+        # taruh tombol milih warna outline
+        self.milih_warna_outline = Button(self.kumpulan_fungsi, text="Outline clr", bg="white", fg="firebrick3",
                                           font=("Arial", 10, "bold"), relief=RAISED, bd=3,
                                           command=lambda: self.warna_outline())
-        self.milih_warna_outline.place(x=120, y=250)
+        self.milih_warna_outline.place(x=135, y=250)
+
+        # segmen refleksi
+        self.segmen_refleksi = Label(self.kumpulan_fungsi, text="Refleksi", bg="SteelBlue1", fg="firebrick2",
+                                     font=("Arial", 12, "bold"), relief=GROOVE, bd=1, padx=10, pady=1)
+        self.segmen_refleksi.place(x=72, y=295)
+
+        # taruh tombol refleksi_x
+        self.refleksi_x = Button(self.kumpulan_fungsi, text="Refleksi X", bg="white", fg="firebrick3",
+                                 font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.refleksikan_x())
+        self.refleksi_x.place(x=30, y=328)
+
+        # taruh tombol refleksi_y
+        self.refleksi_y = Button(self.kumpulan_fungsi, text="Refleksi Y", bg="white", fg="firebrick3",
+                                 font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.fungsi(7))
+        self.refleksi_y.place(x=120, y=328)
 
         # Pergerakan objek
         self.window.bind('<space>', self.pergerakan)
@@ -233,9 +264,11 @@ class Paint:
             for x in self.temp:
                 self.canvas.delete(x)
             try:
+                koordinatnya = [self.x_lama, self.y_lama, e.x, e.y]
                 ambil = self.canvas.create_oval(self.x_lama, self.y_lama, e.x, e.y,
                                                 width=self.width_maintainer,
                                                 fill=self.fill_color, outline=self.outline_color_line)
+                self.simpan_koordinat[ambil] = koordinatnya, 'lingkaran'
                 self.tempat_undo.append(ambil)
                 self.notation_box.insert(END, len(self.tempat_undo) - 1)
                 self.reset()
@@ -262,10 +295,9 @@ class Paint:
                 self.canvas.delete(x)
             try:
                 koordinatnya = [self.x_lama, self.y_lama, e.x, e.y]
-                print("X lama: {} , Y lama: {}, X baru: {}, Y baru: {}".format(self.x_lama, self.y_lama, e.x, e.y))
                 ambil = self.canvas.create_rectangle(self.x_lama, self.y_lama, e.x, e.y, width=self.width_maintainer,
                                                      fill=self.fill_color, outline=self.outline_color_line)
-                self.simpan_koordinat[ambil] = koordinatnya
+                self.simpan_koordinat[ambil] = koordinatnya, 'persegi'
                 self.tempat_undo.append(ambil)
                 self.notation_box.insert(END, len(self.tempat_undo) - 1)
                 self.reset()
@@ -297,7 +329,7 @@ class Paint:
                                                    e.x, e.y,
                                                    width=self.width_maintainer, fill=self.fill_color,
                                                    outline=self.outline_color_line)
-                self.simpan_koordinat[ambil] = koordinatnya
+                self.simpan_koordinat[ambil] = koordinatnya, "segitiga"
                 self.tempat_undo.append(ambil)
                 self.notation_box.insert(END, len(self.tempat_undo) - 1)
                 self.reset()
@@ -324,8 +356,8 @@ class Paint:
             try:
                 koordinatnya = [self.x_lama, self.y_lama, e.x, e.y]
                 ambil = self.canvas.create_line(self.x_lama, self.y_lama, e.x, e.y, width=self.width_maintainer,
-                                                     fill=self.fill_color_line)
-                self.simpan_koordinat[ambil] = koordinatnya
+                                                fill=self.fill_color_line)
+                self.simpan_koordinat[ambil] = koordinatnya, 'garis_r'
                 self.tempat_undo.append(ambil)
                 self.notation_box.insert(END, len(self.tempat_undo) - 1)
                 self.reset()
@@ -333,6 +365,118 @@ class Paint:
                 print("Error: click only not motion")
 
         self.canvas.bind('<ButtonRelease-1>', buat_garis)
+
+    def garis_lurus(self, e):
+        self.status_fungsi['text'] = "Buat Garis Lurus"
+        self.status_fungsi.place(x=1130, y=685)
+        status = ""
+        if self.x_lama and self.y_lama:
+            if abs(e.x - self.x_lama) > abs(e.y - self.y_lama):  # ngecek apakah horizontal
+                take = self.canvas.create_line(self.x_lama, self.y_lama, e.x, self.y_lama,
+                                               width=self.width_maintainer, fill=self.fill_color_line)
+                self.temp.append(take)
+                status = "horizontal"
+            else:  # ini vertikal;
+                take = self.canvas.create_line(self.x_lama, self.y_lama, self.x_lama, e.y,
+                                               width=self.width_maintainer, fill=self.fill_color_line)
+                self.temp.append(take)
+                status = "vertikal"
+        else:
+            self.x_lama = e.x
+            self.y_lama = e.y
+
+        def buat_garis(e):
+            for x in self.temp:
+                self.canvas.delete(x)
+            try:
+                if status == 'horizontal':
+                    koordinatnya = [self.x_lama, self.y_lama, self.x_lama, e.y]
+                    ambil = self.canvas.create_line(self.x_lama, self.y_lama, e.x, self.y_lama,
+                                                    width=self.width_maintainer, fill=self.fill_color_line)
+                else:
+                    koordinatnya = [self.x_lama, self.y_lama, e.x, self.y_lama]
+                    ambil = self.canvas.create_line(self.x_lama, self.y_lama, self.x_lama, e.y,
+                                                    width=self.width_maintainer, fill=self.fill_color_line)
+                self.simpan_koordinat[ambil] = koordinatnya, 'garis_l'
+                self.tempat_undo.append(ambil)
+                self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                self.reset()
+
+            except:
+                print("Error: click only not motion")
+
+        self.canvas.bind('<Shift-ButtonRelease-1>', buat_garis)
+
+    def refleksikan_x(self):
+        try:
+            self.status_fungsi['text'] = "Refleksi"
+            self.status_fungsi.place(x=1180, y=685)
+
+            take = self.notation_box.get(ACTIVE)
+            self.notation_box.config(state=DISABLED)
+            take = self.tempat_undo[take]
+
+            koordinatnya = self.simpan_koordinat[take]
+
+            if koordinatnya[1] == 'persegi':
+                x1 = koordinatnya[0][0]
+                y1 = koordinatnya[0][3] + 20
+                x2 = koordinatnya[0][2]
+                y2 = y1 + (koordinatnya[0][3] - koordinatnya[0][1])
+                ambil = self.canvas.create_rectangle(x1, y1, x2, y2,
+                                                     width=self.width_maintainer,
+                                                     fill=self.fill_color, outline=self.outline_color_line)
+                self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'persegi'
+                self.notation_box.config(state=NORMAL)
+                self.tempat_undo.append(ambil)
+                self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                self.reset()
+            elif koordinatnya[1] == 'segitiga':
+                if koordinatnya[0][1] > koordinatnya[0][3]:
+                    x1 = koordinatnya[0][0]
+                    y1 = koordinatnya[0][1] + 20
+                    x2 = koordinatnya[0][2]
+                    y2 = y1 + (koordinatnya[0][1] - koordinatnya[0][3])
+                    x3 = x1 - (x2 - x1)
+                    y3 = y2
+                    ambil = self.canvas.create_polygon(x1, y1, x2, y2, x3, y3, width=self.width_maintainer,
+                                                       fill=self.fill_color,
+                                                       outline=self.outline_color_line)
+                    self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'segitiga'
+                    self.notation_box.config(state=NORMAL)
+                    self.tempat_undo.append(ambil)
+                    self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                    self.reset()
+                elif koordinatnya[0][1] < koordinatnya[0][3]:
+                    x1 = koordinatnya[0][0]
+                    y1 = koordinatnya[0][3] + 20 + (koordinatnya[0][3] - koordinatnya[0][1])
+                    x2 = koordinatnya[0][2]
+                    y2 = koordinatnya[0][3] + 20
+                    x3 = x1 - (x2 - x1)
+                    y3 = y2
+                    ambil = self.canvas.create_polygon(x1, y1, x2, y2, x3, y3, width=self.width_maintainer,
+                                                       fill=self.fill_color,
+                                                       outline=self.outline_color_line)
+                    self.simpan_koordinat[ambil] = [x1, y1, x3, y3], 'segitiga'
+                    self.notation_box.config(state=NORMAL)
+                    self.tempat_undo.append(ambil)
+                    self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                    self.reset()
+            elif koordinatnya[1] == 'lingkaran':
+                x1 = koordinatnya[0][0]
+                y1 = koordinatnya[0][3] + 20
+                x2 = koordinatnya[0][2]
+                y2 = y1 + (koordinatnya[0][3] - koordinatnya[0][1])
+                ambil = self.canvas.create_oval(x1, y1, x2, y2,
+                                                width=self.width_maintainer,
+                                                fill=self.fill_color, outline=self.outline_color_line)
+                self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'lingkaran'
+                self.notation_box.config(state=NORMAL)
+                self.tempat_undo.append(ambil)
+                self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                self.reset()
+        except:
+            print("Error: Nothing selected from indexing box")
 
     def pergerakan(self, e):
         try:
@@ -372,7 +516,7 @@ class Paint:
 
     def width_controller(self):
         self.frame_width = Frame(self.kumpulan_fungsi, relief=GROOVE, bd=5, width=10, height=10, bg="chocolate")
-        self.frame_width.place(x=10, y=305)
+        self.frame_width.place(x=10, y=370)
 
         def shape_outline_width_controller(e):  # Shape Border Width Controller
             self.width_maintainer = e
@@ -402,20 +546,11 @@ class Paint:
                 self.canvas.scale("all", 550, 350, 0.9, 0.9)
 
     def reset(self):  # Reset
-        # print(self.tempat_undo)
+        print(self.simpan_koordinat)
         self.status_fungsi['text'] = "Grafkom"
         self.status_fungsi.place(x=1140, y=690)
-        # if self.notation_box:
-        #     self.file_menu.entryconfig("Save", state=NORMAL)
-        #     self.edit_menu.entryconfig("Undo",state=NORMAL)
-        #     self.edit_menu.entryconfig("Clear", state=NORMAL)
-        #     self.edit_menu.entryconfig("Cut", state=NORMAL)
-        #     self.edit_menu.entryconfig("Copy", state=NORMAL)
-        #     self.edit_menu.entryconfig("Paste", state=NORMAL)
-        #     self.edit_menu.entryconfig("Screen Shot", state=NORMAL)
-        #     self.option_menu.entryconfig("Movement", state=NORMAL)
-        #     if self.notation_box['state'] == DISABLED:
-        #         self.notation_box['state'] = NORMAL
+        if self.notation_box['state'] == DISABLED:
+            self.notation_box['state'] = NORMAL
         self.x_baru = None
         self.y_baru = None
         self.x_lama = None
