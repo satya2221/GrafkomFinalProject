@@ -83,7 +83,6 @@ class Paint:
         self.fill_color = color[1]
         self.fill_color_line = color[1]
 
-
     def warna_outline(self):
         color = colorchooser.askcolor(title="Choose color")
         self.outline_color_line = color[1]
@@ -111,7 +110,7 @@ class Paint:
             self.canvas.bind('<B1-Motion>', self.buat_segitiga)
         elif notasi == 5:
             self.canvas.bind("<B1-Motion>", self.garis_sembarang)
-            self.canvas.bind("<Shift-B1-Motion>", self.garis_lurus)
+            # self.canvas.bind("<Shift-B1-Motion>", self.garis_lurus)
         elif notasi == 7:
             self.canvas.unbind("<B1-Motion>")
             self.canvas.config(cursor="")
@@ -153,6 +152,11 @@ class Paint:
         self.segitiga = Button(self.kumpulan_fungsi, text="Segitiga", bg="white", fg="firebrick3",
                                font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.fungsi(4))
         self.segitiga.place(x=10, y=85)
+
+        # taruh tombol garis
+        self.garis = Button(self.kumpulan_fungsi, text="Garis", bg="white", fg="firebrick3",
+                            font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.fungsi(5))
+        self.garis.place(x=85, y=85)
 
         # segmen 2 untuk tools
         self.segmen_tools = Label(self.kumpulan_fungsi, text="Kumpulan Tools", bg="SteelBlue1", fg="firebrick2",
@@ -301,6 +305,34 @@ class Paint:
                 print("Error: click only not motion")
 
         self.canvas.bind('<ButtonRelease-1>', triangle_make)
+
+    def garis_sembarang(self, e):
+        self.status_fungsi['text'] = "Buat Garis"
+        self.status_fungsi.place(x=1130, y=685)
+
+        if self.x_lama and self.y_lama:
+            take = self.canvas.create_line(self.x_lama, self.y_lama, e.x, e.y, width=self.width_maintainer,
+                                           fill=self.fill_color_line)
+            self.temp.append(take)
+        else:
+            self.x_lama = e.x
+            self.y_lama = e.y
+
+        def buat_garis(e):
+            for x in self.temp:
+                self.canvas.delete(x)
+            try:
+                koordinatnya = [self.x_lama, self.y_lama, e.x, e.y]
+                ambil = self.canvas.create_line(self.x_lama, self.y_lama, e.x, e.y, width=self.width_maintainer,
+                                                     fill=self.fill_color_line)
+                self.simpan_koordinat[ambil] = koordinatnya
+                self.tempat_undo.append(ambil)
+                self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                self.reset()
+            except:
+                print("Error: click only not motion")
+
+        self.canvas.bind('<ButtonRelease-1>', buat_garis)
 
     def pergerakan(self, e):
         try:
