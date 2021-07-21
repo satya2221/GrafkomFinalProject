@@ -24,7 +24,7 @@ class Paint:
         self.kumpulan_fungsi = None  # controller_set di contoh
         self.choosing_color = None
         self.color = None
-        self.notation_box = None
+        self.notation_box = None  # Daftar Item
         self.segmen_buat = None  # segment_1 di contoh
         self.segmen_tools = None  # segment_2 di contoh
         self.frame_width = None  # make_width_fram di contoh buat setting ketebalan objek
@@ -47,6 +47,7 @@ class Paint:
         # insialisasi yang perlu disimpan array
         self.tempat_undo = []
         self.temp = []
+        self.simpan_koordinat = {}
 
         # inisialisasi variabel penting
         self.fill_information = IntVar()
@@ -73,7 +74,7 @@ class Paint:
         # self.buat_status_bar()
         self.width_controller()  # pengaturan slider ukuran outline dan penghapus
         self.canvas.bind("<Control-MouseWheel>", self.zoom_controller)  # default ctrl+scroll buat zoom in /out
-        # self.make_canvas.bind('<Motion>', self.movement_cursor)  # deteksi pergerakan mouse
+        self.canvas.bind('<Motion>', self.movement_cursor)  # deteksi pergerakan mouse
 
     def pilih_warna(self):
         colorchooser.askcolor(title="Choose color")
@@ -139,6 +140,11 @@ class Paint:
                             font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.fungsi(3))
         self.kotak.place(x=170, y=40)
 
+        # taruh tombol segitiga
+        self.segitiga = Button(self.kumpulan_fungsi, text="Segitiga", bg="white", fg="firebrick3",
+                               font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.fungsi(4))
+        self.segitiga.place(x=10, y=85)
+
         # segmen 2 untuk tools
         self.segmen_tools = Label(self.kumpulan_fungsi, text="Kumpulan Tools", bg="SteelBlue1", fg="firebrick2",
                                   font=("Arial", 12, "bold"), relief=GROOVE, bd=1, padx=10, pady=1)
@@ -164,8 +170,8 @@ class Paint:
                                    font=("Arial", 12, "bold"))
         self.status_fungsi.place(x=1150, y=690)
 
-        self.koordinat = Label(self.window, text="", fg="#292929", bg="#707070", font=("Arial", 9, "bold"))
-        self.koordinat.place(x=20, y=687)
+        self.koordinat = Label(self.window, text="", fg="#292929", font=("Arial", 9, "bold"))
+        self.koordinat.place(x=20, y=690)
 
     def pakai_pensil(self, e):
         self.status_fungsi['text'] = "Gambar pakai pensil"
@@ -175,13 +181,13 @@ class Paint:
             take = self.canvas.create_line(self.x_lama, self.y_lama, e.x, e.y, fill=self.fill_color_line,
                                            width=self.width_maintainer, smooth=True, capstyle=ROUND)
             self.temp.append(take)
-
         self.x_lama = e.x
         self.y_lama = e.y
 
         def push_value(e):
             self.tempat_undo.append(self.temp)
-            self.notation_box.insert(END, len(self.tempat_undo) - 1)
+            self.notation_box.insert(END,
+                                     len(self.tempat_undo) - 1)  # END buat Taruh di index paling terakhir, len -1 buat ngasih nomernya
             self.reset()
 
         self.canvas.bind("<ButtonRelease-1>", push_value)
@@ -230,8 +236,11 @@ class Paint:
             for x in self.temp:
                 self.canvas.delete(x)
             try:
+                koordinatnya = [self.x_lama, self.y_lama, e.x, e.y]
+                print("X lama: {} , Y lama: {}, X baru: {}, Y baru: {}".format(self.x_lama, self.y_lama, e.x, e.y))
                 ambil = self.canvas.create_rectangle(self.x_lama, self.y_lama, e.x, e.y, width=self.width_maintainer,
                                                      fill=self.fill_color, outline=self.outline_color_line)
+                self.simpan_koordinat[ambil] = koordinatnya
                 self.tempat_undo.append(ambil)
                 self.notation_box.insert(END, len(self.tempat_undo) - 1)
                 self.reset()
@@ -239,6 +248,37 @@ class Paint:
                 print("Error: click only not motion")
 
         self.canvas.bind('<ButtonRelease-1>', rectangle_make)
+
+    def buat_segitiga(self, e):
+        self.status_fungsi['text'] = "Buat Segitiga"
+        self.status_fungsi.place(x=1130, y=685)
+
+        if self.x_lama and self.y_lama:
+            take = self.canvas.create_polygon(self.x_lama, self.y_lama, self.x_lama - (e.x - self.x_lama), e.y, e.x,
+                                              e.y,
+                                              width=self.width_maintainer, fill=self.fill_color,
+                                              outline=self.outline_color_line)
+            self.temp.append(take)
+        else:
+            self.x_lama = e.x
+            self.y_lama = e.y
+
+        def triangle_make(e):
+            for x in self.temp:
+                self.canvas.delete(x)
+            try:
+                koordinatnya = [self.x_lama, self.y_lama, e.x, e.y]
+                ambil = self.canvas.create_polygon(self.x_lama, self.y_lama, self.x_lama - (e.x - self.x_lama), e.y, e.x, e.y,
+                                                   width=self.width_maintainer, fill=self.fill_color,
+                                                   outline=self.outline_color_line)
+                self.simpan_koordinat[ambil] = koordinatnya
+                self.tempat_undo.append(ambil)
+                self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                self.reset()
+            except:
+                print("Error: click only not motion")
+
+        self.canvas.bind('<ButtonRelease-1>', triangle_make)
 
     def pergerakan(self, e):
         try:
@@ -287,7 +327,7 @@ class Paint:
                                                bg="chocolate", fg="yellow", padx=20)
         self.shape_outline_width_label.pack(pady=4)
 
-        self.width_controller_scale = Scale(self.frame_width, orient=HORIZONTAL, from_=0, to=100, bg="green",
+        self.width_controller_scale = Scale(self.frame_width, orient=HORIZONTAL, from_=0, to=30, bg="green",
                                             fg="yellow", font=("Arial", 8, "bold"), relief=RAISED, bd=3,
                                             command=shape_outline_width_controller, activebackground="red")
         self.width_controller_scale.set(self.width_maintainer)
@@ -298,9 +338,9 @@ class Paint:
         self.status_fungsi.place(x=1180, y=685)
         try:
             if e.delta > 0:
-               self.canvas.scale("all",e.x,e.y,1.1,1.1)
-            elif e.delta<0:
-               self.canvas.scale("all", e.x, e.y, 0.9, 0.9)
+                self.canvas.scale("all", e.x, e.y, 1.1, 1.1)
+            elif e.delta < 0:
+                self.canvas.scale("all", e.x, e.y, 0.9, 0.9)
         except:
             if e == 1:
                 self.canvas.scale("all", 550, 350, 1.1, 1.1)
@@ -308,7 +348,7 @@ class Paint:
                 self.canvas.scale("all", 550, 350, 0.9, 0.9)
 
     def reset(self):  # Reset
-        print(self.notation_box[0])
+        # print(self.tempat_undo)
         self.status_fungsi['text'] = "Grafkom"
         self.status_fungsi.place(x=1140, y=690)
         # if self.notation_box:
