@@ -208,7 +208,7 @@ class Paint:
 
         # taruh tombol refleksi_y
         self.refleksi_y = Button(self.kumpulan_fungsi, text="Refleksi Y", bg="white", fg="firebrick3",
-                                 font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.fungsi(7))
+                                 font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=lambda: self.refleksikan_y())
         self.refleksi_y.place(x=120, y=328)
 
         # Pergerakan objek
@@ -409,7 +409,7 @@ class Paint:
 
     def refleksikan_x(self):
         try:
-            self.status_fungsi['text'] = "Refleksi"
+            self.status_fungsi['text'] = "Refleksi terhadap sumbu X"
             self.status_fungsi.place(x=1180, y=685)
 
             take = self.notation_box.get(ACTIVE)
@@ -419,20 +419,35 @@ class Paint:
             koordinatnya = self.simpan_koordinat[take]
 
             if koordinatnya[1] == 'persegi':
-                x1 = koordinatnya[0][0]
-                y1 = koordinatnya[0][3] + 20
-                x2 = koordinatnya[0][2]
-                y2 = y1 + (koordinatnya[0][3] - koordinatnya[0][1])
-                ambil = self.canvas.create_rectangle(x1, y1, x2, y2,
-                                                     width=self.width_maintainer,
-                                                     fill=self.fill_color, outline=self.outline_color_line)
-                self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'persegi'
-                self.notation_box.config(state=NORMAL)
-                self.tempat_undo.append(ambil)
-                self.notation_box.insert(END, len(self.tempat_undo) - 1)
-                self.reset()
+                if koordinatnya[0][1] < koordinatnya[0][3]:
+                    x1 = koordinatnya[0][0]
+                    y1 = koordinatnya[0][3] + 20
+                    x2 = koordinatnya[0][2]
+                    y2 = y1 + (koordinatnya[0][3] - koordinatnya[0][1])
+                    ambil = self.canvas.create_rectangle(x1, y1, x2, y2,
+                                                         width=self.width_maintainer,
+                                                         fill=self.fill_color, outline=self.outline_color_line)
+                    self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'persegi'
+                    self.notation_box.config(state=NORMAL)
+                    self.tempat_undo.append(ambil)
+                    self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                    self.reset()
+                elif koordinatnya[0][1] > koordinatnya[0][3]:
+                    x1 = koordinatnya[0][2]
+                    y1 = koordinatnya[0][1] + 20
+                    x2 = koordinatnya[0][0]
+                    y2 = y1 + (koordinatnya[0][1] - koordinatnya[0][3])
+                    ambil = self.canvas.create_rectangle(x1, y1, x2, y2,
+                                                         width=self.width_maintainer,
+                                                         fill=self.fill_color, outline=self.outline_color_line)
+                    self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'persegi'
+                    self.notation_box.config(state=NORMAL)
+                    self.tempat_undo.append(ambil)
+                    self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                    self.reset()
+
             elif koordinatnya[1] == 'segitiga':
-                if koordinatnya[0][1] > koordinatnya[0][3]:
+                if koordinatnya[0][1] > koordinatnya[0][3]:  # ujung dibawah alas diatas
                     x1 = koordinatnya[0][0]
                     y1 = koordinatnya[0][1] + 20
                     x2 = koordinatnya[0][2]
@@ -447,7 +462,7 @@ class Paint:
                     self.tempat_undo.append(ambil)
                     self.notation_box.insert(END, len(self.tempat_undo) - 1)
                     self.reset()
-                elif koordinatnya[0][1] < koordinatnya[0][3]:
+                elif koordinatnya[0][1] < koordinatnya[0][3]:  # ujung diatas alas dibawah
                     x1 = koordinatnya[0][0]
                     y1 = koordinatnya[0][3] + 20 + (koordinatnya[0][3] - koordinatnya[0][1])
                     x2 = koordinatnya[0][2]
@@ -463,20 +478,134 @@ class Paint:
                     self.notation_box.insert(END, len(self.tempat_undo) - 1)
                     self.reset()
             elif koordinatnya[1] == 'lingkaran':
-                x1 = koordinatnya[0][0]
-                y1 = koordinatnya[0][3] + 20
-                x2 = koordinatnya[0][2]
-                y2 = y1 + (koordinatnya[0][3] - koordinatnya[0][1])
+                if koordinatnya[0][1] < koordinatnya[0][3]:
+                    x1 = koordinatnya[0][0]
+                    y1 = koordinatnya[0][3] + 20
+                    x2 = koordinatnya[0][2]
+                    y2 = y1 + (koordinatnya[0][3] - koordinatnya[0][1])
+                    ambil = self.canvas.create_oval(x1, y1, x2, y2,
+                                                    width=self.width_maintainer,
+                                                    fill=self.fill_color, outline=self.outline_color_line)
+                    self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'lingkaran'
+                    self.notation_box.config(state=NORMAL)
+                    self.tempat_undo.append(ambil)
+                    self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                    self.reset()
+                elif koordinatnya[0][1] > koordinatnya[0][3]:
+                    x1 = koordinatnya[0][2]
+                    y1 = koordinatnya[0][1] + 20
+                    x2 = koordinatnya[0][0]
+                    y2 = y1 + (koordinatnya[0][1] - koordinatnya[0][3])
+                    ambil = self.canvas.create_oval(x1, y1, x2, y2,
+                                                         width=self.width_maintainer,
+                                                         fill=self.fill_color, outline=self.outline_color_line)
+                    self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'lingkaran'
+                    self.notation_box.config(state=NORMAL)
+                    self.tempat_undo.append(ambil)
+                    self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                    self.reset()
+
+        except:
+            print("Error: Nothing selected from indexing box")
+
+    def refleksikan_y(self):
+        self.status_fungsi['text'] = "Refleksi terhadap sumbu Y"
+        self.status_fungsi.place(x=1180, y=685)
+
+        take = self.notation_box.get(ACTIVE)
+        self.notation_box.config(state=DISABLED)
+        take = self.tempat_undo[take]
+
+        koordinatnya = self.simpan_koordinat[take]
+
+        if koordinatnya[1] == 'persegi':
+            if koordinatnya[0][0] < koordinatnya[0][2]:
+                x1 = koordinatnya[0][2] + 20
+                y1 = koordinatnya[0][1]
+                x2 = x1 + (koordinatnya[0][2] - koordinatnya[0][0])
+                y2 = koordinatnya[0][3]
+                ambil = self.canvas.create_rectangle(x1, y1, x2, y2,
+                                                     width=self.width_maintainer,
+                                                     fill=self.fill_color, outline=self.outline_color_line)
+                self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'persegi'
+                self.notation_box.config(state=NORMAL)
+                self.tempat_undo.append(ambil)
+                self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                self.reset()
+            elif koordinatnya[0][0] > koordinatnya[0][2]:
+                x1 = koordinatnya[0][0] + 20
+                y1 = koordinatnya[0][3]
+                x2 = x1 + (koordinatnya[0][0] - koordinatnya[0][2])
+                y2 = koordinatnya[0][1]
+
+                ambil = self.canvas.create_rectangle(x1, y1, x2, y2,
+                                                     width=self.width_maintainer,
+                                                     fill=self.fill_color, outline=self.outline_color_line)
+                self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'persegi'
+                self.notation_box.config(state=NORMAL)
+                self.tempat_undo.append(ambil)
+                self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                self.reset()
+
+        elif koordinatnya[1] == 'segitiga':
+            if koordinatnya[0][0] > koordinatnya[0][2]:  # ujung dibawah alas diatas
+                x1 = koordinatnya[0][0] + (koordinatnya[0][0] - koordinatnya[0][2]) + 20 + (koordinatnya[0][0] - koordinatnya[0][2])
+                y1 = koordinatnya[0][1]
+                x2 = x1 + (koordinatnya[0][0] - koordinatnya[0][2])
+                y2 = koordinatnya[0][3]
+                x3 = x1 - (x2 - x1)
+                y3 = y2
+                ambil = self.canvas.create_polygon(x1, y1, x2, y2, x3, y3, width=self.width_maintainer,
+                                                   fill=self.fill_color,
+                                                   outline=self.outline_color_line)
+                self.simpan_koordinat[ambil] = [x1, y1, x3, y3], 'segitiga'
+                self.notation_box.config(state=NORMAL)
+                self.tempat_undo.append(ambil)
+                self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                self.reset()
+            elif koordinatnya[0][0] < koordinatnya[0][2]:  # ujung diatas alas dibawah
+                x1 = koordinatnya[0][2] + 20 + (koordinatnya[0][2]-koordinatnya[0][0])
+                y1 = koordinatnya[0][1]
+                x2 = koordinatnya[0][2] + 20
+                y2 = koordinatnya[0][3]
+                x3 = x1 - (x2 - x1)
+                y3 = y2
+                ambil = self.canvas.create_polygon(x1, y1, x2, y2, x3, y3, width=self.width_maintainer,
+                                                   fill=self.fill_color,
+                                                   outline=self.outline_color_line)
+                self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'segitiga'
+                self.notation_box.config(state=NORMAL)
+                self.tempat_undo.append(ambil)
+                self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                self.reset()
+        elif koordinatnya[1] == 'lingkaran':
+            if koordinatnya[0][0] < koordinatnya[0][2]:
+                x1 = koordinatnya[0][2] + 20
+                y1 = koordinatnya[0][1]
+                x2 = x1 + (koordinatnya[0][2] - koordinatnya[0][0])
+                y2 = koordinatnya[0][3]
                 ambil = self.canvas.create_oval(x1, y1, x2, y2,
-                                                width=self.width_maintainer,
-                                                fill=self.fill_color, outline=self.outline_color_line)
+                                                     width=self.width_maintainer,
+                                                     fill=self.fill_color, outline=self.outline_color_line)
                 self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'lingkaran'
                 self.notation_box.config(state=NORMAL)
                 self.tempat_undo.append(ambil)
                 self.notation_box.insert(END, len(self.tempat_undo) - 1)
                 self.reset()
-        except:
-            print("Error: Nothing selected from indexing box")
+            elif koordinatnya[0][0] > koordinatnya[0][2]:
+                x1 = koordinatnya[0][0] + 20
+                y1 = koordinatnya[0][3]
+                x2 = x1 + (koordinatnya[0][0] - koordinatnya[0][2])
+                y2 = koordinatnya[0][1]
+
+                ambil = self.canvas.create_oval(x1, y1, x2, y2,
+                                                     width=self.width_maintainer,
+                                                     fill=self.fill_color, outline=self.outline_color_line)
+                self.simpan_koordinat[ambil] = [x1, y1, x2, y2], 'lingkaran'
+                self.notation_box.config(state=NORMAL)
+                self.tempat_undo.append(ambil)
+                self.notation_box.insert(END, len(self.tempat_undo) - 1)
+                self.reset()
 
     def pergerakan(self, e):
         try:
